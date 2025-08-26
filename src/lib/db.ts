@@ -1,7 +1,7 @@
 // src/lib/db.ts
 import mongoose from "mongoose";
 
-const MONGODB_URI = "mongodb+srv://admin:admin@cluster0.lbuhyyg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI; // ✅ use env variable
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
@@ -16,7 +16,7 @@ export async function connectDb() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI).then(mongoose => mongoose);
+    cached.promise = mongoose.connect(MONGODB_URI).then(m => m);
   }
 
   cached.conn = await cached.promise;
