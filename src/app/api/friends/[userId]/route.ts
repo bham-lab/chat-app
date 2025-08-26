@@ -1,15 +1,27 @@
 // /api/friends/[userId]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/db";
 import User from "@/models/User";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
-  await connectDb();
-  const { userId } = params; // ✅ no explicit type casting needed
+export async function GET(req: Request, { params }: any) {
+  try {
+    await connectDb();
+    const { userId } = params; // works even on Vercel
 
-  const user = await User.findById(userId).populate("friends", "_id");
-  if (!user) return NextResponse.json({ friends: [] });
+    const user = await User.findById(userId).populate("friends", "_id name avatarUrl lastMessage lastSeen");
+    if (!user) return NextResponse.json({ friends: [] });
 
-  const friendIds = user.friends.map((f: any) => f._id.toString());
-  return NextResponse.json({ friends: friendIds });
+    const friends = user.friends.map((f: any) => ({
+      _id: f._id.toString(),
+      name: f.name,
+      avatarUrl: f.avatarUrl,
+      lastMessage: f.lastMessage || "",
+      lastSeen: f.lastSeen || null
+    }));
+
+    return NextResponse.json({ friends });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ friends: [], error: "Failed to fetch friends" }, { status: 500 });
+  }
 }
