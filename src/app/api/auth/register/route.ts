@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import User from "@/models/User";
 import { connectDb } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     await connectDb();
     const { name, email, password } = await req.json();
@@ -20,7 +20,14 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ name, email, password: hashedPassword });
 
-    return NextResponse.json({ user: newUser }, { status: 201 });
+    return NextResponse.json({
+      user: {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email
+      }
+    }, { status: 201 });
+
   } catch (err: any) {
     console.error("Register API error:", err.message || err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
