@@ -1,6 +1,6 @@
 // /api/friends/add/route.ts
 import { connectDb } from "@/lib/db";
-import User from "@/models/User";
+import Friend from "@/models/Friend";
 
 export async function POST(req: Request) {
   await connectDb();
@@ -14,26 +14,26 @@ export async function POST(req: Request) {
     });
   }
 
-  // Find user
-  const user = await User.findById(userId);
-  if (!user) {
-    return new Response(JSON.stringify({ message: "User not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Check if friendship already exists
+  const existing = await Friend.findOne({
+    user: userId,
+    friend: friendId,
+  });
 
-  // Check if already friends
-  if (user.friends.includes(friendId)) {
+  if (existing) {
     return new Response(JSON.stringify({ message: "Friend already added" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Add friend
-  user.friends.push(friendId);
-  await user.save();
+  // Create new friend relation
+  const newFriend = new Friend({
+    user: userId,
+    friend: friendId,
+  });
+
+  await newFriend.save();
 
   return new Response(JSON.stringify({ message: "Friend added successfully" }), {
     status: 200,

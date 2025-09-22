@@ -8,6 +8,7 @@ interface ChatBoxProps {
   friendName: string;
   friendProfile?: string;
   onBack?: () => void;
+  lastSeen?: string; // ISO string
 }
 
 interface IMessage {
@@ -19,10 +20,24 @@ interface IMessage {
   status: "sent" | "delivered" | "read";
 }
 
-export default function ChatBox({ userId, friendId, friendName, friendProfile, onBack }: ChatBoxProps) {
+export default function ChatBox({ userId, friendId, friendName, friendProfile, lastSeen,onBack }: ChatBoxProps) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [text, setText] = useState("");
-  const [isOnline, setIsOnline] = useState(true);
+  const isOnline = (() => {
+    if (!lastSeen) return false;
+    const diff = Date.now() - new Date(lastSeen).getTime();
+    return diff < 5 * 60 * 1000; // online if last seen < 5 min ago
+  })();
+
+  const lastSeenText = (() => {
+    if (!lastSeen) return "Offline";
+    const diff = Date.now() - new Date(lastSeen).getTime();
+    if (diff < 5 * 60 * 1000) return "Online";
+    if (diff < 60 * 60 * 1000) return `Last seen ${Math.floor(diff / (60 * 1000))} min ago`;
+    if (diff < 24 * 60 * 60 * 1000) return `Last seen ${Math.floor(diff / (60 * 60 * 1000))} h ago`;
+    return `Last seen on ${new Date(lastSeen).toLocaleDateString()}`;
+  })();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -83,9 +98,9 @@ export default function ChatBox({ userId, friendId, friendName, friendProfile, o
   };
 
   return (
-    <div className="flex flex-col h-full border rounded">
+    <div className="flex flex-col h-full border rounded ">
       {/* Sticky Header */}
-      <div className="flex items-center p-3 border-b bg-gray-100 sticky top-0 z-10 shadow-sm">
+      <div className="flex items-center p-3 border-b bg-gray-100 sticky top-0 z-10 shadow-sm ">
       
           <button onClick={onBack} className="sm:hidden mr-2 p-1 rounded hover:bg-gray-200">
             ←

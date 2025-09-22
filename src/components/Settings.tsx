@@ -23,6 +23,26 @@ export default function Settings({ user, onBack }: SettingsProps) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // ✅ Load theme preference
+  useEffect(() => {
+    const saved = localStorage.getItem("darkMode");
+    if (saved === "true") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  // ✅ Apply + persist theme preference
+  useEffect(() => {
+    localStorage.setItem("darkMode", String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  // Fetch friends
   useEffect(() => {
     const fetchFriends = async () => {
       try {
@@ -102,10 +122,13 @@ export default function Settings({ user, onBack }: SettingsProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white text-black dark:bg-gray-900 dark:text-white">
       {/* Back + Profile Section */}
-      <div className="flex items-center p-4 border-b gap-4">
-        <button onClick={onBack} className="text-blue-500 font-semibold flex items-center gap-1">
+      <div className="flex items-center p-4 border-b dark:border-gray-700 gap-4">
+        <button
+          onClick={onBack}
+          className="text-blue-500 font-semibold flex items-center gap-1"
+        >
           <IoArrowBack /> Back
         </button>
         <img
@@ -115,13 +138,18 @@ export default function Settings({ user, onBack }: SettingsProps) {
         />
         <div className="flex flex-col flex-1">
           <span className="font-semibold truncate">{name}</span>
-          <span className="text-sm text-gray-500 truncate">{email}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400 truncate">
+            {email}
+          </span>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Profile Update */}
-        <form onSubmit={handleProfileUpdate} className="space-y-4 p-4 border rounded-lg shadow">
+        <form
+          onSubmit={handleProfileUpdate}
+          className="space-y-4 p-4 border rounded-lg shadow dark:border-gray-700"
+        >
           <h2 className="text-lg font-bold flex items-center gap-2">
             <FiUser /> Update Profile
           </h2>
@@ -137,7 +165,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
           <div className="flex flex-col gap-2">
             <label className="font-medium">Username:</label>
             <input
-              className="border p-2 rounded"
+              className="border p-2 rounded dark:bg-gray-800 dark:border-gray-600"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -145,7 +173,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
           <div className="flex flex-col gap-2">
             <label className="font-medium">Email:</label>
             <input
-              className="border p-2 rounded"
+              className="border p-2 rounded dark:bg-gray-800 dark:border-gray-600"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -153,7 +181,10 @@ export default function Settings({ user, onBack }: SettingsProps) {
         </form>
 
         {/* Password Update */}
-        <form onSubmit={handlePasswordUpdate} className="space-y-4 p-4 border rounded-lg shadow">
+        <form
+          onSubmit={handlePasswordUpdate}
+          className="space-y-4 p-4 border rounded-lg shadow dark:border-gray-700"
+        >
           <h2 className="text-lg font-bold flex items-center gap-2">
             <RiLockPasswordLine /> Change Password
           </h2>
@@ -161,7 +192,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
             <label className="font-medium">Current Password:</label>
             <input
               type="password"
-              className="border p-2 rounded"
+              className="border p-2 rounded dark:bg-gray-800 dark:border-gray-600"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -171,7 +202,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
             <label className="font-medium">New Password:</label>
             <input
               type="password"
-              className="border p-2 rounded"
+              className="border p-2 rounded dark:bg-gray-800 dark:border-gray-600"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -181,7 +212,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
             <label className="font-medium">Confirm New Password:</label>
             <input
               type="password"
-              className="border p-2 rounded"
+              className="border p-2 rounded dark:bg-gray-800 dark:border-gray-600"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -196,7 +227,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
         </form>
 
         {/* Theme Toggle */}
-        <div className="p-4 border rounded-lg shadow flex items-center justify-between">
+        <div className="p-4 border rounded-lg shadow flex items-center justify-between dark:border-gray-700">
           <h2 className="text-lg font-bold flex items-center gap-1">Theme</h2>
           <button
             onClick={() => setDarkMode(!darkMode)}
@@ -216,7 +247,7 @@ export default function Settings({ user, onBack }: SettingsProps) {
       </div>
 
       {/* Sticky Logout Footer */}
-      <div className="p-4 border-t bg-white">
+      <div className="p-4 border-t bg-white dark:bg-gray-800 dark:border-gray-700">
         <button
           onClick={handleLogout}
           className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-1 justify-center"

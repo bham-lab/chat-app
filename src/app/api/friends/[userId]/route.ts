@@ -1,23 +1,48 @@
-// /api/friends/[userId]/route.ts
 import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/db";
-import User from "@/models/User";
+import Friend, { IFriend } from "@/models/Friend";
+import mongoose from "mongoose";
 
-export async function GET(req: Request, { params }: any) {
+// Type for populated friend document
+interface IPopulatedFriendDoc {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  avatarUrl?: string;
+  lastSeen?: string;
+}
+
+interface IFriendWithPopulated {
+  _id: mongoose.Types.ObjectId;
+  friend: IPopulatedFriendDoc;
+  unreadCounts?: number;
+  lastMessage?: string;
+}
+
+export async function GET(req: Request, { params }: { params: { userId: string } }) {
   try {
     await connectDb();
-    const { userId } = params; // works even on Vercel
+    const { userId } = params;
 
-    const user = await User.findById(userId).populate("friends", "_id name avatarUrl lastMessage lastSeen");
-    if (!user) return NextResponse.json({ friends: [] });
+    const friendDocs = await Friend.find({ user: userId }).populate(
+      "friend",
+      "_id name avatarUrl lastSeen"
+    );
 
-    const friends = user.friends.map((f: any) => ({
-      _id: f._id.toString(),
-      name: f.name,
-      avatarUrl: f.avatarUrl,
-      lastMessage: f.lastMessage || "",
-      lastSeen: f.lastSeen || null
-    }));
+    // map to type-safe response
+    const friends: IFriendWithPopulated[] = friendDocs.map((doc) => {
+      const populatedFriend = doc.friend as any; // still cast because Mongoose populate typing is tricky
+      return {
+        _id: doc._id as mongoose.Types.ObjectId,
+        friend: {
+          _id: populatedFriend._id as mongoose.Types.ObjectId,
+          name: populatedFriend.name,
+          avatarUrl: populatedFriend.avatarUrl,
+          lastSeen: populatedFriend.lastSeen,
+        },
+        unreadCounts: (doc as any).unreadCounts || 0,
+        lastMessage: (doc as any).lastMessage || "",
+      };
+    });
 
     return NextResponse.json({ friends });
   } catch (err) {

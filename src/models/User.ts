@@ -7,6 +7,7 @@ export interface IUser extends Document {
   avatar?: string;
   bio?: string;
   friends: mongoose.Types.ObjectId[];
+  lastSeen?: Date; // ✅ add lastSeen
 }
 
 const UserSchema = new mongoose.Schema<IUser>({
@@ -16,6 +17,7 @@ const UserSchema = new mongoose.Schema<IUser>({
   avatar: { type: String },
   bio: { type: String },
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  lastSeen: { type: Date, default: Date.now }, // ✅ track lastSeen
 });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

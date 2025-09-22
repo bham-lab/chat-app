@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+   const [loading, setLoading] = useState(false); 
   const router = useRouter();
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {  e.preventDefault();
+
+
     e.preventDefault();
+    setLoading(true); // start loading
+
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -31,7 +36,11 @@ console.log("User logged in:", data.user);
     } catch (err) {
       console.error(err);
       alert("Login failed");
+    } finally {
+      setLoading(false); // stop loading
     }
+
+  
   };
 
   return (
@@ -52,7 +61,10 @@ console.log("User logged in:", data.user);
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Login</button>
+        <button className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"> 
+          {loading ? "Logging in..." : "Login"}
+
+        </button>
         <p className="text-sm text-center text-gray-500">
           Don't have an account? <span className="text-blue-500 cursor-pointer" onClick={() => router.push("/")}>Register</span>
         </p>
