@@ -3,7 +3,6 @@ import { connectDb } from "@/lib/db";
 import Friend from "@/models/Friend";
 import mongoose from "mongoose";
 
-// Type for populated friend document
 interface IPopulatedFriendDoc {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -18,13 +17,10 @@ interface IFriendWithPopulated {
   lastMessage?: string;
 }
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { userId: string } }
-) {
+export async function GET(req: NextRequest, context: any) {
   try {
     await connectDb();
-    const { userId } = context.params;
+    const { userId } = await context.params; // works regardless of typing
 
     const friendDocs = await Friend.find({ user: userId }).populate(
       "friend",
