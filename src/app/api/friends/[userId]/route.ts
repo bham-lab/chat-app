@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDb } from "@/lib/db";
-import Friend, { IFriend } from "@/models/Friend";
+import Friend from "@/models/Friend";
 import mongoose from "mongoose";
 
 // Type for populated friend document
@@ -18,19 +18,21 @@ interface IFriendWithPopulated {
   lastMessage?: string;
 }
 
-export async function GET(req: Request, { params }: { params: { userId: string } }) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
   try {
     await connectDb();
-    const { userId } = params;
+    const { userId } = context.params;
 
     const friendDocs = await Friend.find({ user: userId }).populate(
       "friend",
       "_id name avatarUrl lastSeen"
     );
 
-    // map to type-safe response
     const friends: IFriendWithPopulated[] = friendDocs.map((doc) => {
-      const populatedFriend = doc.friend as any; // still cast because Mongoose populate typing is tricky
+      const populatedFriend = doc.friend as any;
       return {
         _id: doc._id as mongoose.Types.ObjectId,
         friend: {
@@ -47,6 +49,9 @@ export async function GET(req: Request, { params }: { params: { userId: string }
     return NextResponse.json({ friends });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ friends: [], error: "Failed to fetch friends" }, { status: 500 });
+    return NextResponse.json(
+      { friends: [], error: "Failed to fetch friends" },
+      { status: 500 }
+    );
   }
 }
